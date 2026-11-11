@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kharcha">
+<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121412" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<title>Kharcha</title>
+<style>
+:root{
+  --bg:#f6f5f1; --card:#ffffff; --ink:#1b1d1b; --mute:#6d716c; --line:#e5e3dc;
+  --accent:#1f7a52; --accent-ink:#ffffff; --accent-soft:#e3f1e9; --danger:#b8402f; --chip:#efede7;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#121412; --card:#1c1f1c; --ink:#ecefea; --mute:#99a097; --line:#2c312c;
+    --accent:#3fb37b; --accent-ink:#0b1a12; --accent-soft:#1d3327; --danger:#e0705f; --chip:#262a26;
+    --shadow:none; }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);min-height:100vh}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input,select{font:inherit;color:inherit}
+#app{max-width:640px;margin:0 auto;padding:12px 16px calc(160px + env(safe-area-inset-bottom))}
+header.top{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 12px}
+header.top h1{font-size:22px;margin:0;letter-spacing:-.01em}
+.sync{font-size:12px;color:var(--mute);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mute)}
+.dot.on{background:var(--accent)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:0 0 8px;display:flex;justify-content:space-between;align-items:center}
+.label button{font-size:12px;text-transform:none;letter-spacing:0;color:var(--accent);font-weight:600}
+.amount-wrap{display:flex;align-items:center;gap:6px;font-size:40px;font-weight:700;letter-spacing:-.02em}
+.amount-wrap span{color:var(--mute)}
+.amount-wrap input{border:0;background:none;outline:none;width:100%;font-size:40px;font-weight:700;padding:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 12px;border-radius:999px;background:var(--chip);font-size:15px;line-height:1.2;white-space:nowrap;border:1px solid transparent}
+.chip.on{background:var(--accent);color:var(--accent-ink)}
+.chip.add{background:none;border:1px dashed var(--mute);color:var(--mute)}
+.chip.ghost{background:none;border:1px solid var(--line);color:var(--mute)}
+.cats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.cat{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:12px;background:var(--chip);font-size:11.5px;text-align:center;line-height:1.15;min-height:72px;justify-content:center;border:1px solid transparent}
+.cat b{font-size:24px;font-weight:400;line-height:1}
+.cat.on{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.row{display:flex;gap:8px;align-items:center}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.save{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom));padding:8px 16px;pointer-events:none}
+.save .inner{max-width:608px;margin:0 auto;display:flex;gap:8px;pointer-events:auto}
+.btn{flex:1;padding:15px;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:17px;text-align:center}
+.btn:disabled{opacity:.4}
+.btn.sec{background:var(--card);color:var(--ink);border:1px solid var(--line);flex:0 0 auto;padding:15px 18px}
+.btn.danger{background:none;color:var(--danger);border:1px solid var(--danger);flex:0 0 auto;padding:15px 18px}
+.btn.small{padding:10px 14px;font-size:15px;flex:0 0 auto}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav.tabs .in{display:flex;max-width:640px;width:100%}
+nav.tabs button{flex:1;padding:9px 0 10px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--mute)}
+nav.tabs button svg{width:24px;height:24px}
+nav.tabs button.on{color:var(--accent)}
+.banner{background:var(--accent-soft);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+.monthnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.monthnav button{width:40px;height:40px;border-radius:12px;background:var(--card);border:1px solid var(--line);font-size:20px}
+.monthnav h2{margin:0;font-size:18px}
+.big{font-size:30px;font-weight:700;letter-spacing:-.02em}
+.mute{color:var(--mute)}
+.small{font-size:13px}
+.day{margin:16px 2px 6px;display:flex;justify-content:space-between;font-size:13px;color:var(--mute);font-weight:600}
+.entry{display:flex;align-items:center;gap:12px;padding:11px 12px;background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:6px;width:100%;text-align:left}
+.entry .em{font-size:22px;width:30px;text-align:center}
+.entry .t{flex:1;min-width:0}
+.entry .t div:first-child{font-weight:600}
+.entry .t div:last-child{font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.entry .a{font-weight:700;white-space:nowrap}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat .v{font-size:20px;font-weight:700;margin-top:2px}
+.bar{margin:10px 0}
+.bar .h{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px;gap:8px}
+.bar .h span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .track{height:8px;background:var(--chip);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:6px}
+.trend{display:flex;align-items:flex-end;gap:8px;height:120px;padding-top:10px}
+.trend div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:11px;color:var(--mute);gap:4px}
+.trend i{display:block;width:100%;background:var(--accent);border-radius:6px 6px 2px 2px;min-height:2px;opacity:.55}
+.trend div.cur i{opacity:1}
+.list-row{display:flex;justify-content:space-between;align-items:center;padding:12px 2px;border-bottom:1px solid var(--line);width:100%;text-align:left}
+.list-row:last-child{border-bottom:0}
+.empty{text-align:center;color:var(--mute);padding:40px 10px}
+.toggle{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--mute)}
+.toggle input{width:20px;height:20px;accent-color:var(--accent)}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:var(--bg);width:100%;max-width:640px;max-height:88vh;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+.sheet h3{margin:0 0 12px;font-size:18px}
+.field{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);outline:none;font-size:16px}
+.field:focus{border-color:var(--accent)}
+.opt{display:inline-flex;align-items:center;gap:4px;padding:7px 6px 7px 12px;border-radius:999px;background:var(--chip);font-size:14px}
+.opt button{width:24px;height:24px;border-radius:50%;color:var(--mute);font-size:14px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(140px + env(safe-area-inset-bottom));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%}
+.toast.show{opacity:1}
+.auth{max-width:380px;margin:12vh auto 0;padding:0 16px}
+.auth h1{font-size:30px;margin:0 0 4px}
+.err{color:var(--danger);font-size:14px;min-height:20px;margin:8px 0}
+.note-in{width:100%;border:0;background:none;outline:none;font-size:15px;padding:4px 0}
+.date-in{border:1px solid var(--line);background:var(--chip);border-radius:999px;padding:6px 10px;font-size:15px}
+</style>
+</head>
+<body>
+<div id="app"><div class="empty">Loading…</div></div>
+<div id="toast" class="toast"></div>
+
+<script type="module">
+/* ============================================================
+   KHARCHA — personal expense tracker
+   To turn on cloud sync, paste your Firebase web config below
+   (Firebase console → Project settings → Your apps → Web app).
+   Leave it as null to run in "this device only" mode.
+   ============================================================ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCTbjG-vm9xh0IDiXiAPF9OfihUEAHPsKM",
+  authDomain: "kharcha-17928.firebaseapp.com",
+  projectId: "kharcha-17928",
+  storageBucket: "kharcha-17928.firebasestorage.app",
+  messagingSenderId: "408400576799",
+  appId: "1:408400576799:web:b5c5bfc2d8ae606f2f702a"
+};
+/* Example:
+const FIREBASE_CONFIG = {
+  apiKey: "AIza...",
+  authDomain: "kharcha-xxxx.firebaseapp.com",
+  projectId: "kharcha-xxxx",
+  storageBucket: "kharcha-xxxx.appspot.com",
+  messagingSenderId: "1234567890",
+  appId: "1:1234567890:web:abcdef"
+};
+*/
+const FB_VER = "10.14.1";
+
+/* ---------------- Default lists ---------------- */
+const DEFAULT_CONFIG = {
+  version: 1,
+  payments: ["UPI","Credit card","Debit card","Cash","Net banking","Wallet"],
+  categories: [
+    {id:"food",emoji:"🍽️",name:"Food & Dining",kind:"everyday",
+     items:["Breakfast","Lunch","Dinner","Coffee","Tea / Chai","Snacks","Desserts","Juice & Shakes","Food delivery"],
+     places:["Swiggy","Zomato","Starbucks","Third Wave Coffee","Blue Tokai","Chai Point","Rameshwaram Cafe","MTR","Darshini","Restaurant","Office cafeteria","Street food"]},
+    {id:"groceries",emoji:"🛒",name:"Groceries",kind:"everyday",
+     items:["Vegetables","Fruits","Milk","Curd & Paneer","Bread & Eggs","Rice & Grains","Atta","Dal & Pulses","Oil & Ghee","Spices","Packaged snacks","Beverages","Meat & Fish","Cleaning supplies","Toiletries"],
+     places:["Blinkit","Zepto","Swiggy Instamart","BigBasket","Flipkart Minutes","Amazon Fresh","DMart","Ratnadeep","More","Reliance Fresh","Nandini","Kirana store","Local market"]},
+    {id:"cabs",emoji:"🚕",name:"Cabs & Commute",kind:"everyday",
+     items:["Cab","Auto","Bike taxi","Airport cab","Metro","Bus","Train","Goods transport"],
+     places:["Uber","Ola","Rapido","Namma Yatri","Porter","Namma Metro","BMTC","IRCTC","Street auto"]},
+    {id:"fuel",emoji:"⛽",name:"Fuel & Vehicle",kind:"everyday",
+     items:["Petrol","Diesel","EV charging","Servicing","Repairs","Tyres","Car wash","Parking","Toll / FASTag","Vehicle insurance","Accessories"],
+     places:["Indian Oil","HP","Bharat Petroleum","Shell","Service centre","Local garage","FASTag","Mall parking"]},
+    {id:"home",emoji:"🏠",name:"Home",kind:"everyday",
+     items:["Rent","Home loan EMI","Society maintenance","Maid","Cook","Driver","Plumber","Electrician","Repairs","Pest control","Laundry","Household items","Plants & gardening"],
+     places:["Landlord","Society","Urban Company","Local service","Amazon","Hardware store","Nursery"]},
+    {id:"furniture",emoji:"🛋️",name:"Furniture & Decor",kind:"oneoff",
+     items:["Sofa","Bed","Mattress","Table","Chairs","Wardrobe / Storage","Lighting","Curtains","Rugs","Decor","Bedding","Kitchenware"],
+     places:["IKEA","Pepperfry","Urban Ladder","Wakefit","Home Centre","Amazon","Flipkart","Local carpenter","Commercial Street"]},
+    {id:"bills",emoji:"💡",name:"Bills & Utilities",kind:"everyday",
+     items:["Electricity","Water","Gas cylinder","Piped gas","Mobile recharge","Broadband","DTH"],
+     places:["BESCOM","BWSSB","Indane","Bharat Gas","GAIL Gas","Airtel","Jio","Vi","ACT Fibernet","Tata Play"]},
+    {id:"shopping",emoji:"🛍️",name:"Shopping",kind:"everyday",
+     items:["Clothes","Footwear","Bags","Watches","Accessories","Personal care","Salon & Grooming","Books","Stationery","Gifts"],
+     places:["Amazon","Flipkart","Myntra","Ajio","Nykaa","Tata CLiQ","Westside","Zara","H&M","Decathlon","Mall","Local shop"]},
+    {id:"gadgets",emoji:"📱",name:"Gadgets & Electronics",kind:"oneoff",
+     items:["Phone","Laptop","Tablet","Headphones","Smartwatch","Chargers & Cables","Accessories","TV","Appliances","Repairs","Software & Apps"],
+     places:["Apple Store","Amazon","Flipkart","Croma","Reliance Digital","Vijay Sales","Imagine","SP Road","Service centre"]},
+    {id:"health",emoji:"🩺",name:"Health",kind:"everyday",
+     items:["Doctor consultation","Medicines","Lab tests","Dental","Eye care","Gym","Yoga","Supplements","Health insurance","Hospital"],
+     places:["Apollo Pharmacy","MedPlus","PharmEasy","Tata 1mg","Practo","Hospital","Clinic","Cult.fit","Gym"]},
+    {id:"fun",emoji:"🎬",name:"Entertainment",kind:"everyday",
+     items:["Movies","OTT subscription","Music subscription","Concerts & Events","Games","Hobbies","Sports","Outings"],
+     places:["BookMyShow","District","PVR INOX","Netflix","Prime Video","JioHotstar","Spotify","YouTube Premium","Apple"]},
+    {id:"travel",emoji:"✈️",name:"Travel",kind:"oneoff",
+     items:["Flights","Train tickets","Bus tickets","Hotel","Homestay / Airbnb","Local transport","Food on trip","Sightseeing","Visa & documents","Shopping on trip"],
+     places:["IndiGo","Air India","Akasa Air","MakeMyTrip","Goibibo","Cleartrip","Booking.com","Agoda","Airbnb","IRCTC","redBus"]},
+    {id:"family",emoji:"👨‍👩‍👧",name:"Family & Kids",kind:"everyday",
+     items:["School fees","Tuition","Toys","Kids clothes","Gifts","Family support","Celebrations","Pet care"],
+     places:["School","Amazon","FirstCry","Hamleys","Family","Vet"]},
+    {id:"work",emoji:"💼",name:"Work / Reimbursable",kind:"reimb",
+     items:["Client meal","Travel","Cab","Hotel","Office supplies","Software","Events","Courier"],
+     places:["Swiggy","Zomato","Uber","Ola","Restaurant","Hotel","Amazon","Porter"]},
+    {id:"nashe",emoji:"🍺",name:"Nashe",kind:"everyday",
+     items:["Beer","Whisky","Wine","Rum","Vodka","Gin","Cocktails","Bar tab","Cigarettes","Hookah","Mixers & snacks"],
+     places:["Toit","Byg Brewski","Windmills","Pub","Bar","Tonique","MSIL","Wine shop","Liquor store","Paan shop"]},
+    {id:"other",emoji:"📦",name:"Other",kind:"everyday",
+     items:["Donation","Charity","Bank charges","Taxes","Fines","Courier","Miscellaneous"],
+     places:["Temple","NGO","Bank","Government","India Post","Other"]}
+  ]
+};
+const DEFAULT_ASSET_TYPES = [
+  {id:"bank",emoji:"🏦",name:"Bank & Savings",inst:["HDFC Bank","ICICI Bank","SBI","Axis Bank","Kotak Mahindra Bank","IDFC FIRST Bank","Yes Bank","Federal Bank","Canara Bank","Bank of Baroda"]},
+  {id:"fd",emoji:"🔒",name:"Fixed Deposits",inst:["HDFC Bank","ICICI Bank","SBI","Axis Bank","Kotak Mahindra Bank","IDFC FIRST Bank","Bajaj Finance","Post Office"]},
+  {id:"stocks",emoji:"📈",name:"Stocks",inst:["Zerodha","Groww","Upstox","Angel One","ICICI Direct","HDFC Sky","Kotak Securities","Dhan"]},
+  {id:"mf",emoji:"📊",name:"Mutual Funds",inst:["Groww","Zerodha Coin","Kuvera","Paytm Money","ET Money","MF Central","Direct with AMC"]},
+  {id:"retire",emoji:"🏛️",name:"EPF / PPF / NPS",inst:["EPF","PPF","NPS","VPF"]},
+  {id:"gold",emoji:"🥇",name:"Gold & Silver",inst:["Physical gold","Sovereign Gold Bond","Gold ETF","Digital gold","Silver"]},
+  {id:"property",emoji:"🌾",name:"Land & Property",inst:["Home","Plot","Farmland","Commercial property"]},
+  {id:"crypto",emoji:"🪙",name:"Crypto",inst:["CoinDCX","CoinSwitch","Mudrex","Binance","Wallet"]},
+  {id:"insurance",emoji:"🛡️",name:"Insurance (savings)",inst:["LIC","HDFC Life","ICICI Prudential Life","Axis Max Life","SBI Life","Tata AIA"]},
+  {id:"vehicle",emoji:"🚗",name:"Vehicles",inst:["Car","Bike"]},
+  {id:"cash",emoji:"💵",name:"Cash & Wallets",inst:["Cash at home","Amazon Pay","Paytm wallet"]},
+  {id:"lent",emoji:"🤝",name:"Money lent",inst:["Friend","Family"]},
+  {id:"other",emoji:"📦",name:"Other",inst:["Other"]}
+];
+DEFAULT_CONFIG.assetTypes = DEFAULT_ASSET_TYPES;
+const KIND_LABEL = {everyday:"Everyday", oneoff:"One-off / big purchase", reimb:"Reimbursable (not personal)"};
+
+/* ---------------- Helpers ---------------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad = n => String(n).padStart(2,"0");
+const dstr = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today = () => dstr(new Date());
+const yesterday = () => { const d=new Date(); d.setDate(d.getDate()-1); return dstr(d); };
+const ymOf = s => s.slice(0,7);
+const shiftYM = (ym, n) => { let [y,m]=ym.split("-").map(Number); m+=n; while(m<1){m+=12;y--} while(m>12){m-=12;y++} return `${y}-${pad(m)}`; };
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const ymLabel = ym => { const [y,m]=ym.split("-").map(Number); return `${MONTHS[m-1]} ${y}`; };
+const daysInMonth = ym => { const [y,m]=ym.split("-").map(Number); return new Date(y,m,0).getDate(); };
+const inrF = new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:2,minimumFractionDigits:0});
+const inr = n => inrF.format(Math.round(n*100)/100);
+const inr0 = n => new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(n);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+const norm = s => String(s||"").trim().replace(/\s+/g," ");
+const tidy = s => { s = norm(s); return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; };
+const ci = s => norm(s).toLowerCase();
+const clone = o => JSON.parse(JSON.stringify(o));
+function lev(a,b){ a=a.toLowerCase(); b=b.toLowerCase(); const m=a.length,n=b.length; if(!m) return n; if(!n) return m;
+  let prev=Array.from({length:n+1},(_,i)=>i);
+  for(let i=1;i<=m;i++){ const cur=[i]; for(let j=1;j<=n;j++){ cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1)); } prev=cur; }
+  return prev[n]; }
+function fmtDay(s){ if(s===today()) return "Today"; if(s===yesterday()) return "Yesterday";
+  const d=new Date(s+"T00:00:00"); return d.toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"}); }
+let toastT; function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2200); }
+
+/* ---------------- Modal helpers (no alert/prompt) ---------------- */
+function openSheet(html, onMount){
+  const ov=document.createElement("div"); ov.className="overlay";
+  ov.innerHTML=`<div class="sheet">${html}</div>`;
+  ov.addEventListener("click",e=>{ if(e.target===ov) close(); });
+  document.body.appendChild(ov);
+  function close(){ ov.remove(); }
+  onMount && onMount(ov.querySelector(".sheet"), close);
+  return close;
+}
+function askText({title, value="", placeholder="", ok="Save"}){
+  return new Promise(res=>{
+    openSheet(`<h3>${esc(title)}</h3><input class="field" id="askIn" value="${esc(value)}" placeholder="${esc(placeholder)}" autocomplete="off" autocapitalize="words">
+      <div class="row" style="margin-top:12px"><button class="btn sec" id="askNo">Cancel</button><button class="btn" id="askOk">${esc(ok)}</button></div>`,
+      (el,close)=>{ const i=el.querySelector("#askIn"); setTimeout(()=>i.focus(),50);
+        const done=v=>{close();res(v)};
+        el.querySelector("#askNo").onclick=()=>done(null);
+        el.querySelector("#askOk").onclick=()=>done(norm(i.value)||null);
+        i.onkeydown=e=>{ if(e.key==="Enter") done(norm(i.value)||null); };
+      });
+  });
+}
+function confirmBox(msg, {ok="Yes", no="Cancel", danger=false}={}){
+  return new Promise(res=>{
+    openSheet(`<h3>${msg}</h3><div class="row" style="margin-top:14px"><button class="btn sec" id="cNo">${esc(no)}</button><button class="btn" id="cOk" ${danger?'style="background:var(--danger)"':''}>${esc(ok)}</button></div>`,
+      (el,close)=>{ el.querySelector("#cNo").onclick=()=>{close();res(false)}; el.querySelector("#cOk").onclick=()=>{close();res(true)}; });
+  });
+}
+
+/* ---------------- Storage: this device ---------------- */
+class LocalStore{
+  constructor(){ this.key="kharcha_v1"; this.mem=null; this.mode="local"; }
+  read(){ if(this.mem) return this.mem; let d=null; try{ d=JSON.parse(localStorage.getItem(this.key)); }catch(e){}
+    this.mem = d || {config:clone(DEFAULT_CONFIG), expenses:{}}; this.mem.holdings ??= {}; return this.mem; }
+  write(){ try{ localStorage.setItem(this.key, JSON.stringify(this.mem)); }catch(e){} }
+  start(cb){ this.cb=cb; const d=this.read(); cb.onConfig(d.config); cb.onHoldings(Object.values(d.holdings)); cb.onExpenses(Object.values(d.expenses)); }
+  putHolding(h){ this.mem.holdings[h.id]=h; this.write(); this.cb.onHoldings(Object.values(this.mem.holdings)); }
+  deleteHolding(id){ delete this.mem.holdings[id]; this.write(); this.cb.onHoldings(Object.values(this.mem.holdings)); }
+  emit(){ this.write(); this.cb.onExpenses(Object.values(this.mem.expenses)); }
+  saveConfig(c){ this.mem.config=clone(c); this.write(); this.cb.onConfig(this.mem.config); }
+  putExpense(e){ this.mem.expenses[e.id]=e; this.emit(); }
+  deleteExpense(id){ delete this.mem.expenses[id]; this.emit(); }
+  bulkUpdate(ups){ ups.forEach(u=>{ if(this.mem.expenses[u.id]) Object.assign(this.mem.expenses[u.id],u.changes); }); this.emit(); }
+  importMany(list){ list.forEach(e=>this.mem.expenses[e.id]=e); this.emit(); }
+}
+
+/* ---------------- Storage: Firebase (sync) ---------------- */
+class FirebaseStore{
+  constructor(fb, user){ this.fb=fb; this.user=user; this.mode="cloud"; }
+  start(cb){
+    const {db, F}=this.fb, u=this.user.uid;
+    this.cfgRef=F.doc(db,"users",u,"settings","config");
+    this.col=F.collection(db,"users",u,"expenses");
+    F.onSnapshot(this.cfgRef, snap=>{
+      if(!snap.exists()){ if(!snap.metadata.fromCache){ F.setDoc(this.cfgRef, clone(DEFAULT_CONFIG)); } cb.onConfig(clone(DEFAULT_CONFIG)); }
+      else cb.onConfig(snap.data());
+    }, err=>{ console.error(err); toast("Sync error: "+err.code); });
+    F.onSnapshot(this.col, {includeMetadataChanges:true}, snap=>{
+      cb.onExpenses(snap.docs.map(d=>({id:d.id,...d.data()})), snap.metadata.hasPendingWrites);
+    }, err=>{ console.error(err); toast("Sync error: "+err.code); });
+    this.hcol=F.collection(db,"users",u,"holdings");
+    F.onSnapshot(this.hcol, snap=>{ cb.onHoldings(snap.docs.map(d=>({id:d.id,...d.data()}))); }, err=>console.error(err));
+  }
+  putHolding(h){ const {id,...rest}=h; this.fb.F.setDoc(this.fb.F.doc(this.hcol,id), rest).catch(er=>toast("Couldn't save: "+er.code)); }
+  deleteHolding(id){ this.fb.F.deleteDoc(this.fb.F.doc(this.hcol,id)).catch(er=>toast("Couldn't delete: "+er.code)); }
+  saveConfig(c){ this.fb.F.setDoc(this.cfgRef, clone(c)).catch(e=>toast("Couldn't save: "+e.code)); }
+  putExpense(e){ const {id,...rest}=e; this.fb.F.setDoc(this.fb.F.doc(this.col,id), rest).catch(er=>toast("Couldn't save: "+er.code)); }
+  deleteExpense(id){ this.fb.F.deleteDoc(this.fb.F.doc(this.col,id)).catch(er=>toast("Couldn't delete: "+er.code)); }
+  bulkUpdate(ups){ const F=this.fb.F;
+    for(let i=0;i<ups.length;i+=400){ const b=F.writeBatch(this.fb.db);
+      ups.slice(i,i+400).forEach(u=>b.update(F.doc(this.col,u.id),u.changes)); b.commit().catch(e=>toast("Couldn't update: "+e.code)); } }
+  importMany(list){ const F=this.fb.F;
+    for(let i=0;i<list.length;i+=400){ const b=F.writeBatch(this.fb.db);
+      list.slice(i,i+400).forEach(e=>{ const {id,...rest}=e; b.set(F.doc(this.col,id),rest); }); b.commit().catch(er=>toast("Import failed: "+er.code)); } }
+}
+
+/* ---------------- State ---------------- */
+const S = {
+  store:null, user:null, fb:null, config:null, expenses:[], holdings:[], pending:false,
+  tab:"add", month: ymOf(today()), histCat:null, inclReimb:false, editingId:null,
+  form:null, stats:null, showAllItems:false, showAllPlaces:false
+};
+function blankForm(){ return {amount:"", catId:null, item:null, place:null, pay:S.stats?.topPay || (S.config?.payments[0]) || "UPI", date:today(), note:"", autoPlace:false}; }
+const cat = id => S.config.categories.find(c=>c.id===id) || {id, emoji:"❔", name:"(deleted)", items:[], places:[], kind:"everyday"};
+
+function computeStats(){
+  const st={item:{}, place:{}, itemPlace:{}, itemPay:{}, pay:{}};
+  const inc=(o,k)=>o[k]=(o[k]||0)+1;
+  for(const e of S.expenses){
+    inc(st.item, e.catId+"|"+e.item); if(e.place) inc(st.place, e.catId+"|"+e.place);
+    if(e.place){ st.itemPlace[e.catId+"|"+e.item] ??= {}; inc(st.itemPlace[e.catId+"|"+e.item], e.place); }
+    if(e.pay){ st.itemPay[e.catId+"|"+e.item] ??= {}; inc(st.itemPay[e.catId+"|"+e.item], e.pay); inc(st.pay,e.pay); }
+  }
+  const top=o=>o?Object.entries(o).sort((a,b)=>b[1]-a[1])[0]?.[0]:null;
+  st.top=top; st.topPay=top(st.pay);
+  S.stats=st;
+}
+function sortedOpts(c, kind){
+  const list=c[kind]||[], key=kind==="items"?"item":"place";
+  return list.map((v,i)=>[v,(S.stats?.[key][c.id+"|"+v]||0),i]).sort((a,b)=>b[1]-a[1]||a[2]-b[2]).map(x=>x[0]);
+}
+
+/* ---------------- Actions ---------------- */
+function saveConfig(){ S.store.saveConfig(S.config); }
+
+async function addOption(catId, kind, raw){
+  const c=cat(catId); const v=tidy(raw); if(!v) return null;
+  const list=c[kind];
+  const exact=list.find(x=>ci(x)===ci(v)); if(exact) return exact;
+  // catch likely typos against this category and all others
+  const pool=[...new Set([...list, ...S.config.categories.flatMap(k=>k[kind])])];
+  const near=pool.map(x=>[x,lev(x,v)]).filter(([x,d])=>d>0 && d<=Math.max(1,Math.floor(Math.min(x.length,v.length)/4))).sort((a,b)=>a[1]-b[1])[0];
+  if(near){
+    const useIt=await confirmBox(`Did you mean <b>${esc(near[0])}</b>?`,{ok:`Use “${near[0]}”`, no:`Keep “${v}”`});
+    if(useIt){ if(!list.some(x=>ci(x)===ci(near[0]))){ list.push(near[0]); saveConfig(); } return near[0]; }
+  }
+  list.push(v); saveConfig(); return v;
+}
+
+function saveExpense(){
+  const f=S.form; const amt=parseFloat(String(f.amount).replace(/,/g,""));
+  if(!(amt>0)) return toast("Enter an amount");
+  if(!f.catId) return toast("Pick a category");
+  if(!f.item) return toast("Pick an item");
+  const e={ id:S.editingId||uid(), amount:Math.round(amt*100)/100, date:f.date, catId:f.catId, item:f.item,
+    place:f.place||"", pay:f.pay||"", note:norm(f.note), created: S.editingId ? (S.expenses.find(x=>x.id===S.editingId)?.created||Date.now()) : Date.now(), updated:Date.now() };
+  S.store.putExpense(e);
+  toast(`${S.editingId?"Updated":"Saved"} ${inr(e.amount)} · ${e.item}`);
+  const wasEdit=!!S.editingId;
+  S.editingId=null; S.form=blankForm(); S.showAllItems=S.showAllPlaces=false;
+  if(wasEdit){ S.tab="history"; }
+  render();
+}
+function startEdit(id){
+  const e=S.expenses.find(x=>x.id===id); if(!e) return;
+  S.editingId=id; S.form={amount:String(e.amount), catId:e.catId, item:e.item, place:e.place||null, pay:e.pay, date:e.date, note:e.note||"", autoPlace:false};
+  S.tab="add"; render(); window.scrollTo(0,0);
+}
+async function deleteCurrent(){
+  if(!S.editingId) return;
+  if(!await confirmBox("Delete this expense?",{ok:"Delete",danger:true})) return;
+  S.store.deleteExpense(S.editingId); S.editingId=null; S.form=blankForm(); S.tab="history"; toast("Deleted"); render();
+}
+
+/* ---------------- Views ---------------- */
+const ICONS={
+  add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
+  history:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>',
+  insights:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V11M12 20V5M19 20v-7"/></svg>',
+  assets:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><path d="M5 10v9M19 10v9M9.5 10v9M14.5 10v9M3 20h18"/></svg>',
+  settings:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>'
+};
+function shell(inner){
+  const syncTxt = S.store?.mode==="cloud" ? (S.pending?"Syncing…":"Synced") : "This device only";
+  return `<header class="top"><h1>${{add:S.editingId?"Edit expense":"Add expense",history:"History",insights:"Insights",assets:"Assets",settings:"Settings"}[S.tab]}</h1>
+    <div class="sync"><span class="dot ${S.store?.mode==="cloud"&&!S.pending?"on":""}"></span>${syncTxt}</div></header>${inner}
+    <nav class="tabs"><div class="in">${["add","history","insights","assets","settings"].map(t=>`<button data-tab="${t}" class="${S.tab===t?"on":""}">${ICONS[t]}${t[0].toUpperCase()+t.slice(1)}</button>`).join("")}</div></nav>`;
+}
+
+function viewAdd(){
+  const f=S.form, c=f.catId?cat(f.catId):null;
+  let h="";
+  if(S.editingId) h+=`<div class="banner"><span>Editing an entry</span><button data-act="cancelEdit" style="color:var(--accent);font-weight:600">Cancel</button></div>`;
+  h+=`<div class="card"><div class="label">Amount</div><div class="amount-wrap"><span>₹</span><input id="amt" inputmode="decimal" placeholder="0" value="${esc(f.amount)}" autocomplete="off"></div></div>`;
+  h+=`<div class="card"><div class="label">Category</div><div class="cats">${S.config.categories.map(k=>`<button class="cat ${f.catId===k.id?"on":""}" data-cat="${k.id}"><b>${k.emoji}</b>${esc(k.name)}</button>`).join("")}</div></div>`;
+  if(c){
+    const items=sortedOpts(c,"items"); const LIM=12;
+    const showI = S.showAllItems||items.length<=LIM+2 ? items : items.slice(0,LIM);
+    if(f.item && !showI.includes(f.item)) showI.push(f.item);
+    h+=`<div class="card"><div class="label">What did you buy?</div><div class="chips">${showI.map(v=>`<button class="chip ${f.item===v?"on":""}" data-item="${esc(v)}">${esc(v)}</button>`).join("")}
+      ${showI.length<items.length?`<button class="chip ghost" data-act="moreItems">+${items.length-showI.length} more</button>`:""}
+      <button class="chip add" data-act="newItem">＋ New item</button></div></div>`;
+    const places=sortedOpts(c,"places");
+    const showP = S.showAllPlaces||places.length<=LIM+2 ? places : places.slice(0,LIM);
+    if(f.place && !showP.includes(f.place)) showP.push(f.place);
+    h+=`<div class="card"><div class="label">Where? <span class="small mute" style="text-transform:none;letter-spacing:0;font-weight:400">optional</span></div><div class="chips">${showP.map(v=>`<button class="chip ${f.place===v?"on":""}" data-place="${esc(v)}">${esc(v)}</button>`).join("")}
+      ${showP.length<places.length?`<button class="chip ghost" data-act="morePlaces">+${places.length-showP.length} more</button>`:""}
+      <button class="chip add" data-act="newPlace">＋ New place</button></div></div>`;
+  }
+  h+=`<div class="card"><div class="label">Paid via</div><div class="seg">${S.config.payments.map(p=>`<button class="chip ${f.pay===p?"on":""}" data-pay="${esc(p)}">${esc(p)}</button>`).join("")}</div></div>`;
+  const isT=f.date===today(), isY=f.date===yesterday();
+  h+=`<div class="card"><div class="label">When</div><div class="chips" style="align-items:center">
+     <button class="chip ${isT?"on":""}" data-date="${today()}">Today</button>
+     <button class="chip ${isY?"on":""}" data-date="${yesterday()}">Yesterday</button>
+     <input type="date" class="date-in" id="dateIn" value="${f.date}" max="${today()}" style="${!isT&&!isY?"border-color:var(--accent)":""}"></div></div>`;
+  h+=`<div class="card"><div class="label">Note <span class="small mute" style="text-transform:none;letter-spacing:0;font-weight:400">optional</span></div><input class="note-in" id="noteIn" placeholder="e.g. Anniversary dinner" value="${esc(f.note)}"></div>`;
+  const ok = parseFloat(f.amount)>0 && f.catId && f.item;
+  h+=`<div class="save"><div class="inner">${S.editingId?`<button class="btn danger" data-act="del">Delete</button>`:""}<button class="btn" data-act="save" ${ok?"":"disabled"}>${S.editingId?"Update":"Save"}${parseFloat(f.amount)>0?" "+inr(parseFloat(f.amount)):""}</button></div></div>`;
+  return h;
+}
+
+function monthNav(){ const cur=ymOf(today());
+  return `<div class="monthnav"><button data-month="-1">‹</button><h2>${ymLabel(S.month)}</h2><button data-month="1" ${S.month>=cur?"disabled style='opacity:.3'":""}>›</button></div>`; }
+const monthList = ym => S.expenses.filter(e=>ymOf(e.date)===ym);
+
+function viewHistory(){
+  let list=monthList(S.month);
+  const cats=[...new Set(list.map(e=>e.catId))];
+  if(S.histCat && !cats.includes(S.histCat)) S.histCat=null;
+  if(S.histCat) list=list.filter(e=>e.catId===S.histCat);
+  list.sort((a,b)=>b.date.localeCompare(a.date)||(b.created||0)-(a.created||0));
+  const total=list.reduce((s,e)=>s+e.amount,0);
+  let h=monthNav();
+  h+=`<div class="card"><div class="mute small">${S.histCat?esc(cat(S.histCat).name):"Total"} · ${list.length} entries</div><div class="big">${inr(total)}</div></div>`;
+  if(cats.length>1) h+=`<div class="chips" style="margin-bottom:6px"><button class="chip ${!S.histCat?"on":""}" data-hcat="">All</button>${cats.map(id=>`<button class="chip ${S.histCat===id?"on":""}" data-hcat="${id}">${cat(id).emoji} ${esc(cat(id).name)}</button>`).join("")}</div>`;
+  if(!list.length) return h+`<div class="empty">No expenses for ${ymLabel(S.month)} yet.</div>`;
+  let lastDay=null;
+  const byDay={}; list.forEach(e=>byDay[e.date]=(byDay[e.date]||0)+e.amount);
+  for(const e of list){
+    if(e.date!==lastDay){ h+=`<div class="day"><span>${fmtDay(e.date)}</span><span>${inr(byDay[e.date])}</span></div>`; lastDay=e.date; }
+    const k=cat(e.catId);
+    h+=`<button class="entry" data-edit="${e.id}"><span class="em">${k.emoji}</span><span class="t"><div>${esc(e.item)}</div><div>${[e.place,e.pay,e.note].filter(Boolean).map(esc).join(" · ")||esc(k.name)}</div></span><span class="a">${inr(e.amount)}</span></button>`;
+  }
+  return h;
+}
+
+function bars(rows, total, max=8){
+  if(!rows.length) return `<div class="mute small">Nothing yet</div>`;
+  const top=rows[0][1]||1;
+  return rows.slice(0,max).map(([label,v,sub])=>`<div class="bar"><div class="h"><span>${label}</span><span><b>${inr0(v)}</b> <span class="mute small">${total?Math.round(v/total*100):0}%</span></span></div><div class="track"><div class="fill" style="width:${Math.max(2,v/top*100)}%"></div></div>${sub?`<div class="mute small" style="margin-top:3px">${sub}</div>`:""}</div>`).join("");
+}
+function viewInsights(){
+  const filt = l => S.inclReimb ? l : l.filter(e=>cat(e.catId).kind!=="reimb");
+  const list=filt(monthList(S.month)), prev=filt(monthList(shiftYM(S.month,-1)));
+  const total=list.reduce((s,e)=>s+e.amount,0), ptotal=prev.reduce((s,e)=>s+e.amount,0);
+  const isCur=S.month===ymOf(today());
+  const days=isCur?new Date().getDate():daysInMonth(S.month);
+  let h=monthNav();
+  h+=`<label class="toggle" style="margin:-4px 2px 10px"><input type="checkbox" id="reimbT" ${S.inclReimb?"checked":""}> Include Work / Reimbursable</label>`;
+  if(!list.length) return h+`<div class="empty">No expenses for ${ymLabel(S.month)} yet.<br>Add a few and your insights will show up here.</div>`;
+  const diff = ptotal ? Math.round((total-ptotal)/ptotal*100) : null;
+  const oneoff=list.filter(e=>cat(e.catId).kind==="oneoff").reduce((s,e)=>s+e.amount,0);
+  h+=`<div class="stats" style="margin-bottom:12px">
+    <div class="stat"><div class="mute small">Spent</div><div class="v">${inr0(total)}</div></div>
+    <div class="stat"><div class="mute small">vs ${MONTHS[Number(shiftYM(S.month,-1).slice(5))-1]}</div><div class="v" style="color:${diff==null?"inherit":diff>0?"var(--danger)":"var(--accent)"}">${diff==null?"—":(diff>0?"▲ ":"▼ ")+Math.abs(diff)+"%"}</div></div>
+    <div class="stat"><div class="mute small">Daily average${isCur?" so far":""}</div><div class="v">${inr0(total/days)}</div></div>
+    <div class="stat"><div class="mute small">Entries</div><div class="v">${list.length}</div></div></div>`;
+  if(oneoff>0) h+=`<div class="card"><div class="label">Everyday vs one-off</div><div class="row" style="justify-content:space-between"><div><div class="mute small">Everyday</div><b>${inr0(total-oneoff)}</b></div><div style="text-align:right"><div class="mute small">One-off (furniture, gadgets, travel)</div><b>${inr0(oneoff)}</b></div></div><div class="track" style="height:8px;background:var(--chip);border-radius:6px;overflow:hidden;margin-top:10px"><div class="fill" style="height:100%;background:var(--accent);width:${(total-oneoff)/total*100}%"></div></div></div>`;
+  const sumBy=(fn)=>{ const o={}; list.forEach(e=>{ const k=fn(e); if(k) o[k]=(o[k]||[0,0]), o[k][0]+=e.amount, o[k][1]++; }); return Object.entries(o).sort((a,b)=>b[1][0]-a[1][0]); };
+  const byCat=sumBy(e=>e.catId).map(([id,[v,n]])=>[`${cat(id).emoji} ${esc(cat(id).name)}`,v,`${n} ${n===1?"entry":"entries"}`]);
+  h+=`<div class="card"><div class="label">By category</div>${bars(byCat,total,20)}</div>`;
+  const byItem=sumBy(e=>e.catId+"|"+e.item).map(([k,[v,n]])=>{ const [id,it]=k.split(/\|(.*)/s); return [`${cat(id).emoji} ${esc(it)}`,v,`${n}× · avg ${inr0(v/n)}`]; });
+  h+=`<div class="card"><div class="label">Top items</div>${bars(byItem,total,8)}</div>`;
+  const byPlace=sumBy(e=>e.place).map(([p,[v,n]])=>[esc(p),v,`${n} ${n===1?"visit":"visits"}`]);
+  if(byPlace.length) h+=`<div class="card"><div class="label">Where your money went</div>${bars(byPlace,total,8)}</div>`;
+  const cabs=list.filter(e=>e.catId==="cabs").reduce((s,e)=>s+e.amount,0), fuel=list.filter(e=>e.catId==="fuel").reduce((s,e)=>s+e.amount,0);
+  if(cabs&&fuel) h+=`<div class="card"><div class="label">Getting around</div><div class="row" style="justify-content:space-between"><div><div class="mute small">🚕 Cabs & commute</div><b>${inr0(cabs)}</b></div><div style="text-align:right"><div class="mute small">⛽ Own vehicle</div><b>${inr0(fuel)}</b></div></div></div>`;
+  const byPay=sumBy(e=>e.pay).map(([p,[v,n]])=>[esc(p),v]);
+  h+=`<div class="card"><div class="label">Paid via</div>${bars(byPay,total,8)}</div>`;
+  const months=[...Array(6)].map((_,i)=>shiftYM(S.month,i-5));
+  const mt=months.map(m=>filt(monthList(m)).reduce((s,e)=>s+e.amount,0)); const mx=Math.max(...mt,1);
+  h+=`<div class="card"><div class="label">Last 6 months</div><div class="trend">${months.map((m,i)=>`<div class="${m===S.month?"cur":""}"><span>${mt[i]?short(mt[i]):""}</span><i style="height:${mt[i]/mx*80}%"></i>${MONTHS[Number(m.slice(5))-1]}</div>`).join("")}</div></div>`;
+  return h;
+}
+
+function viewSettings(){
+  let h="";
+  if(S.store.mode==="cloud") h+=`<div class="card"><div class="label">Account</div><div class="row" style="justify-content:space-between"><div><div>${esc(S.user.email)}</div><div class="mute small">Syncing across your devices</div></div><button class="btn sec small" data-act="signout">Sign out</button></div></div>`;
+  else h+=`<div class="card"><div class="label">Storage</div><div>Saved on this device only</div><div class="mute small" style="margin-top:4px">Turn on sync by adding your Firebase settings (see the setup guide). Until then, export a CSV now and then as a backup.</div></div>`;
+  h+=`<div class="card"><div class="label">Categories <button data-act="newCat">＋ Add category</button></div>${S.config.categories.map(c=>`<button class="list-row" data-ecat="${c.id}"><span>${c.emoji} ${esc(c.name)}</span><span class="mute small">${c.items.length} items · ${c.places.length} places ›</span></button>`).join("")}</div>`;
+  h+=`<div class="card"><div class="label">Payment methods <button data-act="newPay">＋ Add</button></div><div class="chips">${S.config.payments.map((p,i)=>`<span class="opt">${esc(p)}<button data-delpay="${i}" aria-label="Remove">✕</button></span>`).join("")}</div></div>`;
+  h+=`<div class="card"><div class="label">Your data</div><div class="mute small" style="margin-bottom:10px">${S.expenses.length} expenses · ${S.holdings.length} holdings recorded</div><div class="row" style="flex-wrap:wrap"><button class="btn sec small" data-act="csv">Download CSV</button><button class="btn sec small" data-act="copycsv">Copy CSV</button><button class="btn sec small" data-act="hcsv">Assets CSV</button><label class="btn sec small" style="cursor:pointer">Import CSV<input type="file" id="csvIn" accept=".csv,text/csv" hidden></label></div></div>`;
+  return h;
+}
+
+function catEditor(id){
+  const isNew=!id; const c=isNew?{id:"c"+uid(),emoji:"🏷️",name:"",kind:"everyday",items:[],places:[]}:clone(cat(id));
+  openSheet(`<div id="ce"></div>`,(el,close)=>{
+    const draw=()=>{ el.querySelector("#ce").innerHTML=`
+      <h3>${isNew?"New category":"Edit category"}</h3>
+      <div class="row"><input class="field" id="ceEmoji" value="${esc(c.emoji)}" style="width:64px;text-align:center;font-size:22px" maxlength="4"><input class="field" id="ceName" value="${esc(c.name)}" placeholder="Category name" autocapitalize="words"></div>
+      <div class="label" style="margin-top:14px">Type</div><div class="chips">${Object.entries(KIND_LABEL).map(([k,l])=>`<button class="chip ${c.kind===k?"on":""}" data-kind="${k}">${l}</button>`).join("")}</div>
+      ${["items","places"].map(kind=>`<div class="label" style="margin-top:16px">${kind==="items"?"Items":"Places"} <button data-addopt="${kind}">＋ Add</button></div>
+        <div class="chips">${c[kind].map((v,i)=>`<span class="opt"><span data-ren="${kind}|${i}">${esc(v)}</span><button data-rm="${kind}|${i}" aria-label="Remove">✕</button></span>`).join("")||'<span class="mute small">None yet</span>'}</div>`).join("")}
+      <div class="mute small" style="margin-top:10px">Tap a name to rename it. Renaming also fixes your past entries.</div>
+      <div class="row" style="margin-top:18px">${!isNew&&c.id!=="other"?`<button class="btn danger" id="ceDel">Delete</button>`:""}<button class="btn sec" id="ceCancel">Cancel</button><button class="btn" id="ceSave">Save</button></div>`;
+    };
+    draw();
+    const sync=()=>{ c.emoji=norm(el.querySelector("#ceEmoji").value)||"🏷️"; c.name=tidy(el.querySelector("#ceName").value); };
+    el.addEventListener("click", async ev=>{
+      const t=ev.target.closest("button,[data-ren]"); if(!t) return;
+      if(t.dataset.kind){ sync(); c.kind=t.dataset.kind; draw(); }
+      else if(t.dataset.addopt){ sync(); const kind=t.dataset.addopt; const v=await askText({title:`New ${kind==="items"?"item":"place"}`}); if(v){ const tv=tidy(v); if(!c[kind].some(x=>ci(x)===ci(tv))) c[kind].push(tv); draw(); } }
+      else if(t.dataset.rm){ sync(); const [kind,i]=t.dataset.rm.split("|"); c[kind].splice(+i,1); draw(); }
+      else if(t.dataset.ren){ sync(); const [kind,i]=t.dataset.ren.split("|"); const old=c[kind][+i]; const v=await askText({title:`Rename “${old}”`,value:old}); if(v&&v!==old){ const tv=tidy(v); c._renames=c._renames||[]; c._renames.push([kind,old,tv]); if(c[kind].some((x,j)=>j!==+i&&ci(x)===ci(tv))) c[kind].splice(+i,1); else c[kind][+i]=tv; draw(); } }
+      else if(t.id==="ceCancel") close();
+      else if(t.id==="ceDel"){ const n=S.expenses.filter(e=>e.catId===c.id).length;
+        if(!await confirmBox(`Delete “${esc(c.name)}”?${n?` Its ${n} past ${n===1?"entry moves":"entries move"} to Other.`:""}`,{ok:"Delete",danger:true})) return;
+        const other=cat("other"); const moved=S.expenses.filter(e=>e.catId===c.id);
+        moved.forEach(e=>{ if(!other.items.some(x=>ci(x)===ci(e.item))) other.items.push(e.item); });
+        S.config.categories=S.config.categories.filter(k=>k.id!==c.id); saveConfig();
+        if(moved.length) S.store.bulkUpdate(moved.map(e=>({id:e.id,changes:{catId:"other"}})));
+        close(); toast("Category deleted"); render(); }
+      else if(t.id==="ceSave"){ sync(); if(!c.name) return toast("Give it a name");
+        const dup=S.config.categories.find(k=>k.id!==c.id&&ci(k.name)===ci(c.name)); if(dup) return toast("That category already exists");
+        const renames=c._renames||[]; delete c._renames;
+        if(isNew) S.config.categories.splice(Math.max(0,S.config.categories.findIndex(k=>k.id==="other")),0,c);
+        else S.config.categories=S.config.categories.map(k=>k.id===c.id?c:k);
+        saveConfig();
+        // apply renames to past entries
+        const ups=[];
+        for(const [kind,old,nw] of renames){ const f=kind==="items"?"item":"place";
+          S.expenses.forEach(e=>{ if(e.catId===c.id && e[f]===old) ups.push({id:e.id,changes:{[f]:nw}}); }); }
+        if(ups.length) S.store.bulkUpdate(ups);
+        close(); toast(ups.length?`Saved · ${ups.length} past entries updated`:"Saved"); render(); }
+    });
+  });
+}
+
+/* ---------------- Assets & holdings ---------------- */
+const atype = id => (S.config.assetTypes||[]).find(t=>t.id===id) || {id,emoji:"📦",name:"Other",inst:[]};
+const hval = h => +h.value||0;
+function valueAt(h, dateStr){ // latest recorded value on or before date
+  const hist=(h.history&&h.history.length?h.history:[{date:h.asOf||today(),value:h.value}]).slice().sort((a,b)=>a.date.localeCompare(b.date));
+  let v=0; for(const p of hist){ if(p.date<=dateStr) v=+p.value; else break; } return v;
+}
+function viewAssets(){
+  const H=S.holdings.slice();
+  let h="";
+  if(!H.length){
+    return h+`<div class="card" style="text-align:center;padding:28px 16px"><div style="font-size:40px">🏦</div><div style="font-weight:600;margin:8px 0 4px">Track what you own</div><div class="mute small" style="margin-bottom:16px">Bank balances, FDs, stocks, mutual funds, PF, gold, land — add each once, then just update the value now and then.</div><button class="btn" data-hold="" style="width:100%">＋ Add your first holding</button></div>`;
+  }
+  const total=H.reduce((s,x)=>s+hval(x),0);
+  const withInv=H.filter(x=>+x.invested>0);
+  const inv=withInv.reduce((s,x)=>s+(+x.invested),0), invCur=withInv.reduce((s,x)=>s+hval(x),0);
+  const gain=invCur-inv;
+  const stale=H.filter(x=>(x.asOf||"")<shiftYM(ymOf(today()),-2)+"-01").length;
+  h+=`<div class="card"><div class="mute small">Net worth (assets)</div><div class="big">${inr0(total)}</div>
+    ${inv?`<div class="small" style="margin-top:4px">Invested ${inr0(inv)} → ${inr0(invCur)} · <b style="color:${gain>=0?"var(--accent)":"var(--danger)"}">${gain>=0?"+":"−"}${inr0(Math.abs(gain))} (${(gain/inv*100).toFixed(1)}%)</b></div>`:""}
+    ${stale?`<div class="small mute" style="margin-top:6px">⏰ ${stale} ${stale===1?"holding hasn't":"holdings haven't"} been updated in 2+ months</div>`:""}</div>`;
+  h+=`<button class="btn" data-hold="" style="width:100%;margin-bottom:12px">＋ Add holding</button>`;
+  // allocation
+  const byT={}; H.forEach(x=>byT[x.type]=(byT[x.type]||0)+hval(x));
+  const rows=Object.entries(byT).sort((a,b)=>b[1]-a[1]).map(([t,v])=>[`${atype(t).emoji} ${esc(atype(t).name)}`,v]);
+  h+=`<div class="card"><div class="label">Allocation</div>${bars(rows,total,20)}</div>`;
+  // trend
+  const months=[...Array(6)].map((_,i)=>shiftYM(ymOf(today()),i-5));
+  const ends=months.map(m=>m===ymOf(today())?today():`${m}-${pad(daysInMonth(m))}`);
+  const mt=ends.map(d=>H.reduce((s,x)=>s+valueAt(x,d),0)); const mx=Math.max(...mt,1);
+  if(H.some(x=>(x.history||[]).length>1) || mt.filter(Boolean).length>1)
+    h+=`<div class="card"><div class="label">Net worth trend</div><div class="trend">${months.map((m,i)=>`<div class="${i===5?"cur":""}"><span>${mt[i]?short(mt[i]):""}</span><i style="height:${mt[i]/mx*80}%"></i>${MONTHS[Number(m.slice(5))-1]}</div>`).join("")}</div></div>`;
+  // list by type
+  const types=Object.keys(byT).sort((a,b)=>byT[b]-byT[a]);
+  for(const t of types){
+    const T=atype(t);
+    h+=`<div class="day"><span>${T.emoji} ${esc(T.name)}</span><span>${inr0(byT[t])}</span></div>`;
+    H.filter(x=>x.type===t).sort((a,b)=>hval(b)-hval(a)).forEach(x=>{
+      const g=+x.invested>0?hval(x)-(+x.invested):null;
+      h+=`<button class="entry" data-hold="${x.id}"><span class="t"><div>${esc(x.name||x.inst)}</div><div>${[x.name?x.inst:"", g!=null?`${g>=0?"+":"−"}${inr0(Math.abs(g))} (${(g/(+x.invested)*100).toFixed(1)}%)`:"", "as of "+fmtDay(x.asOf||today())].filter(Boolean).map(esc).join(" · ")}</div></span><span class="a">${inr0(hval(x))}</span></button>`;
+    });
+  }
+  return h;
+}
+function short(n){ if(n>=1e7) return "₹"+(n/1e7).toFixed(n>=1e8?0:1)+"Cr"; if(n>=1e5) return "₹"+(n/1e5).toFixed(n>=1e6?0:1)+"L"; if(n>=1e3) return "₹"+Math.round(n/1e3)+"k"; return "₹"+Math.round(n); }
+
+function holdingEditor(id){
+  const ex=id?S.holdings.find(x=>x.id===id):null;
+  const h=ex?clone(ex):{id:uid(),type:null,inst:null,name:"",invested:"",value:"",asOf:today(),note:"",history:[]};
+  const oldValue=ex?+ex.value:null;
+  openSheet(`<div id="he"></div>`,(el,close)=>{
+    const draw=()=>{ const T=h.type?atype(h.type):null;
+      el.querySelector("#he").innerHTML=`<h3>${ex?"Update holding":"Add holding"}</h3>
+      <div class="label">Type</div><div class="cats">${S.config.assetTypes.map(t=>`<button class="cat ${h.type===t.id?"on":""}" data-ht="${t.id}"><b>${t.emoji}</b>${esc(t.name)}</button>`).join("")}</div>
+      ${T?`<div class="label" style="margin-top:14px">Held with</div><div class="chips">${T.inst.map(v=>`<button class="chip ${h.inst===v?"on":""}" data-hi="${esc(v)}">${esc(v)}</button>`).join("")}<button class="chip add" data-hnew="1">＋ New</button></div>`:""}
+      ${T?`<div class="label" style="margin-top:14px">Name <span class="small mute" style="text-transform:none;letter-spacing:0;font-weight:400">optional — e.g. fund name, “Salary account”</span></div>
+      <input class="field" id="hName" value="${esc(h.name)}" placeholder="${esc(h.inst||"")}" autocapitalize="words" list="hnames">
+      <datalist id="hnames">${[...new Set(S.holdings.map(x=>x.name).filter(Boolean))].map(n=>`<option value="${esc(n)}">`).join("")}</datalist>
+      <div class="row" style="margin-top:14px;align-items:flex-start"><div style="flex:1"><div class="label">Current value</div><input class="field" id="hVal" inputmode="decimal" value="${esc(h.value)}" placeholder="₹"></div>
+      <div style="flex:1"><div class="label">Invested <span class="small mute" style="text-transform:none;letter-spacing:0;font-weight:400">optional</span></div><input class="field" id="hInv" inputmode="decimal" value="${esc(h.invested)}" placeholder="₹"></div></div>
+      <div class="label" style="margin-top:14px">Value as of</div><input type="date" class="date-in" id="hDate" value="${h.asOf}" max="${today()}">
+      ${ex&&(h.history||[]).length>1?`<div class="label" style="margin-top:16px">Value history</div>${h.history.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6).map(p=>`<div class="row small" style="justify-content:space-between;padding:4px 2px"><span class="mute">${fmtDay(p.date)}</span><span>${inr0(p.value)}</span></div>`).join("")}`:""}`:""}
+      <div class="row" style="margin-top:18px">${ex?`<button class="btn danger" id="hDel">Delete</button>`:""}<button class="btn sec" id="hCancel">Cancel</button><button class="btn" id="hSave">Save</button></div>`;
+    };
+    const sync=()=>{ const g=s=>el.querySelector(s); if(g("#hName")){ h.name=tidy(g("#hName").value); h.value=g("#hVal").value.replace(/[^\d.]/g,""); h.invested=g("#hInv").value.replace(/[^\d.]/g,""); h.asOf=g("#hDate").value||today(); } };
+    draw();
+    el.addEventListener("click", async ev=>{
+      const t=ev.target.closest("button"); if(!t) return; const d=t.dataset;
+      if(d.ht){ sync(); if(h.type!==d.ht){ h.type=d.ht; h.inst=null; } draw(); }
+      else if(d.hi){ sync(); h.inst=d.hi; draw(); }
+      else if(d.hnew){ sync(); const v=await askText({title:"Held with (bank, broker, etc.)"}); if(v){ const T=atype(h.type); const tv=tidy(v);
+          let use=T.inst.find(x=>ci(x)===ci(tv));
+          if(!use){ const near=T.inst.map(x=>[x,lev(x,tv)]).filter(([x,dd])=>dd>0&&dd<=Math.max(1,Math.floor(Math.min(x.length,tv.length)/4))).sort((a,b)=>a[1]-b[1])[0];
+            if(near && await confirmBox(`Did you mean <b>${esc(near[0])}</b>?`,{ok:`Use “${near[0]}”`,no:`Keep “${tv}”`})) use=near[0];
+            else { T.inst.push(tv); saveConfig(); use=tv; } }
+          h.inst=use; } draw(); }
+      else if(t.id==="hCancel") close();
+      else if(t.id==="hDel"){ if(await confirmBox(`Delete “${esc(h.name||h.inst)}”?`,{ok:"Delete",danger:true})){ S.store.deleteHolding(h.id); close(); toast("Deleted"); render(); } }
+      else if(t.id==="hSave"){ sync();
+        if(!h.type) return toast("Pick a type"); if(!h.inst) return toast("Pick where it's held");
+        const v=parseFloat(h.value); if(!(v>=0)||h.value==="") return toast("Enter the current value");
+        h.value=Math.round(v*100)/100; h.invested=h.invested===""?"":Math.round(parseFloat(h.invested)*100)/100;
+        h.history=(h.history||[]).filter(p=>p.date!==h.asOf); h.history.push({date:h.asOf,value:h.value});
+        h.history.sort((a,b)=>a.date.localeCompare(b.date));
+        h.asOf=h.history[h.history.length-1].date; h.value=h.history[h.history.length-1].value;
+        h.updated=Date.now(); S.store.putHolding(h); close();
+        toast(ex? (oldValue!==h.value?`Updated · ${inr0(h.value)}`:"Saved") : `Added ${h.name||h.inst}`); render(); }
+    });
+  });
+}
+function holdingsCSV(){
+  const q=v=>{ v=String(v??""); return /[",\n]/.test(v)?`"${v.replace(/"/g,'""')}"`:v; };
+  const rows=[["Type","Held with","Name","Current value","Invested","As of"]];
+  S.holdings.forEach(x=>rows.push([atype(x.type).name,x.inst,x.name,x.value,x.invested,x.asOf]));
+  return rows.map(r=>r.map(q).join(",")).join("\n");
+}
+
+/* ---------------- CSV ---------------- */
+function toCSV(){
+  const q=v=>{ v=String(v??""); return /[",\n]/.test(v)?`"${v.replace(/"/g,'""')}"`:v; };
+  const rows=[["Date","Amount","Category","Item","Place","Paid via","Note","Type"]];
+  [...S.expenses].sort((a,b)=>a.date.localeCompare(b.date)).forEach(e=>{ const c=cat(e.catId); rows.push([e.date,e.amount,c.name,e.item,e.place,e.pay,e.note,c.kind]); });
+  return rows.map(r=>r.map(q).join(",")).join("\n");
+}
+function parseCSV(text){
+  const rows=[]; let row=[], f="", q=false;
+  for(let i=0;i<text.length;i++){ const ch=text[i];
+    if(q){ if(ch==='"'){ if(text[i+1]==='"'){f+='"';i++} else q=false; } else f+=ch; }
+    else if(ch==='"') q=true; else if(ch===","){row.push(f);f=""} else if(ch==="\n"||ch==="\r"){ if(ch==="\r"&&text[i+1]==="\n") i++; row.push(f); rows.push(row); row=[]; f=""; } else f+=ch; }
+  if(f||row.length){row.push(f);rows.push(row)}
+  return rows.filter(r=>r.some(x=>x.trim()));
+}
+async function importCSV(file){
+  const rows=parseCSV(await file.text()); const head=rows.shift()?.map(h=>ci(h))||[];
+  const ix=n=>head.indexOf(n); const I={date:ix("date"),amount:ix("amount"),cat:ix("category"),item:ix("item"),place:ix("place"),pay:ix("paid via"),note:ix("note")};
+  if(I.date<0||I.amount<0||I.cat<0||I.item<0) return toast("CSV needs Date, Amount, Category, Item columns");
+  const out=[]; let cfgChanged=false;
+  for(const r of rows){ const amt=parseFloat(r[I.amount]); if(!(amt>0)||!/^\d{4}-\d{2}-\d{2}$/.test(r[I.date])) continue;
+    let c=S.config.categories.find(k=>ci(k.name)===ci(r[I.cat]));
+    if(!c){ c={id:"c"+uid(),emoji:"🏷️",name:tidy(r[I.cat])||"Other",kind:"everyday",items:[],places:[]}; S.config.categories.splice(S.config.categories.length-1,0,c); cfgChanged=true; }
+    const item=tidy(r[I.item])||"Miscellaneous", place=I.place>=0?tidy(r[I.place]):"";
+    if(!c.items.some(x=>ci(x)===ci(item))){c.items.push(item);cfgChanged=true}
+    if(place&&!c.places.some(x=>ci(x)===ci(place))){c.places.push(place);cfgChanged=true}
+    out.push({id:uid()+out.length,amount:amt,date:r[I.date],catId:c.id,item,place,pay:I.pay>=0?norm(r[I.pay]):"",note:I.note>=0?norm(r[I.note]):"",created:Date.now(),updated:Date.now()}); }
+  if(!out.length) return toast("No valid rows found");
+  if(!await confirmBox(`Import ${out.length} expenses?`,{ok:"Import"})) return;
+  if(cfgChanged) saveConfig(); S.store.importMany(out); toast(`Imported ${out.length}`); render();
+}
+
+/* ---------------- Render & events ---------------- */
+function render(){
+  if(!S.config) return;
+  if(!S.form) S.form=blankForm();
+  const v={add:viewAdd,history:viewHistory,insights:viewInsights,assets:viewAssets,settings:viewSettings}[S.tab]();
+  $("#app").innerHTML=shell(v);
+  bindInputs();
+}
+function refreshSaveBtn(){
+  const f=S.form, b=document.querySelector('[data-act="save"]'); if(!b) return;
+  const a=parseFloat(f.amount); b.disabled=!(a>0&&f.catId&&f.item);
+  b.textContent=(S.editingId?"Update":"Save")+(a>0?" "+inr(a):"");
+}
+function bindInputs(){
+  const amt=$("#amt"); if(amt){ amt.oninput=()=>{ let v=amt.value.replace(/[^\d.]/g,""); const p=v.split("."); if(p.length>2) v=p[0]+"."+p.slice(1).join(""); if(v!==amt.value) amt.value=v; S.form.amount=v; refreshSaveBtn(); };
+    if(S.tab==="add" && !S.form.amount && !S.editingId && matchMedia("(hover:hover)").matches) amt.focus(); }
+  const di=$("#dateIn"); if(di) di.onchange=()=>{ if(di.value){ S.form.date=di.value; render(); } };
+  const ni=$("#noteIn"); if(ni) ni.oninput=()=>{ S.form.note=ni.value; };
+  const rt=$("#reimbT"); if(rt) rt.onchange=()=>{ S.inclReimb=rt.checked; render(); };
+  const ci_=$("#csvIn"); if(ci_) ci_.onchange=()=>{ if(ci_.files[0]) importCSV(ci_.files[0]); ci_.value=""; };
+}
+document.addEventListener("click", async ev=>{
+  const t=ev.target.closest("[data-tab],[data-cat],[data-item],[data-place],[data-pay],[data-date],[data-act],[data-month],[data-hcat],[data-edit],[data-ecat],[data-delpay],[data-hold]");
+  if(!t || !$("#app").contains(t)) return;
+  const d=t.dataset, f=S.form;
+  if(d.tab){ if(S.tab==="add"&&d.tab!=="add"&&S.editingId){ S.editingId=null; S.form=blankForm(); } S.tab=d.tab; render(); window.scrollTo(0,0); return; }
+  if(d.cat!==undefined){ if(f.catId!==d.cat){ f.catId=d.cat; f.item=null; f.place=null; S.showAllItems=S.showAllPlaces=false; } render(); return; }
+  if(d.item!==undefined){ f.item = f.item===d.item?null:d.item;
+    if(f.item){ const k=f.catId+"|"+f.item; const tp=S.stats.top(S.stats.itemPlace[k]); if(tp&&(!f.place||f.autoPlace)){ f.place=tp; f.autoPlace=true; }
+      const pp=S.stats.top(S.stats.itemPay[k]); if(pp&&!S.editingId) f.pay=pp; }
+    render(); return; }
+  if(d.place!==undefined){ f.place = f.place===d.place?null:d.place; f.autoPlace=false; render(); return; }
+  if(d.pay!==undefined){ f.pay=d.pay; render(); return; }
+  if(d.date!==undefined){ f.date=d.date; render(); return; }
+  if(d.month){ const n=shiftYM(S.month,+d.month); if(n<=ymOf(today())) { S.month=n; render(); } return; }
+  if(d.hcat!==undefined){ S.histCat=d.hcat||null; render(); return; }
+  if(d.edit){ startEdit(d.edit); return; }
+  if(d.hold!==undefined){ holdingEditor(d.hold||null); return; }
+  if(d.ecat){ catEditor(d.ecat); return; }
+  if(d.delpay!==undefined){ if(S.config.payments.length<=1) return; S.config.payments.splice(+d.delpay,1); saveConfig(); render(); return; }
+  switch(d.act){
+    case "save": saveExpense(); break;
+    case "del": deleteCurrent(); break;
+    case "cancelEdit": S.editingId=null; S.form=blankForm(); S.tab="history"; render(); break;
+    case "moreItems": S.showAllItems=true; render(); break;
+    case "morePlaces": S.showAllPlaces=true; render(); break;
+    case "newItem": { const v=await askText({title:`New item in ${cat(f.catId).name}`,placeholder:"e.g. Biryani"}); if(v){ const r=await addOption(f.catId,"items",v); if(r){ f.item=r; S.showAllItems=true; } render(); } break; }
+    case "newPlace": { const v=await askText({title:"New place",placeholder:"e.g. Meghana Foods"}); if(v){ const r=await addOption(f.catId,"places",v); if(r){ f.place=r; f.autoPlace=false; S.showAllPlaces=true; } render(); } break; }
+    case "newCat": catEditor(null); break;
+    case "newPay": { const v=await askText({title:"New payment method",placeholder:"e.g. HDFC credit card"}); if(v){ const tv=tidy(v); if(!S.config.payments.some(x=>ci(x)===ci(tv))){ S.config.payments.push(tv); saveConfig(); } render(); } break; }
+    case "hcsv": { try{ const b=new Blob([holdingsCSV()],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=`kharcha-assets-${today()}.csv`; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ toast("Download blocked here"); } break; }
+    case "csv": { try{ const b=new Blob([toCSV()],{type:"text/csv"}); const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=`kharcha-${today()}.csv`; document.body.appendChild(a); a.click(); a.remove(); }catch(e){ toast("Download blocked here — use Copy CSV"); } break; }
+    case "copycsv": { try{ await navigator.clipboard.writeText(toCSV()); toast("CSV copied"); }catch(e){ toast("Couldn't copy"); } break; }
+    case "signout": if(await confirmBox("Sign out?",{ok:"Sign out"})){ await S.fb.A.signOut(S.fb.auth); } break;
+  }
+});
+
+/* ---------------- Boot ---------------- */
+const callbacks={
+  onHoldings(list){ S.holdings=list; if(S.config&&!document.querySelector(".overlay")) render(); },
+  onConfig(c){ S.config=c; if(!S.config.payments) S.config.payments=clone(DEFAULT_CONFIG.payments);
+    if(!S.config.assetTypes){ S.config.assetTypes=clone(DEFAULT_ASSET_TYPES); S.store&&S.store.saveConfig(S.config); } computeStats(); if(!document.querySelector(".overlay")||S.tab!=="add") render(); },
+  onExpenses(list, pending=false){ S.expenses=list; S.pending=pending; computeStats(); if(!document.querySelector(".overlay")) render(); else { const s=document.querySelector(".sync"); } }
+};
+
+function authScreen(err=""){
+  $("#app").innerHTML=`<div class="auth"><h1>Kharcha</h1><p class="mute">Sign in to sync your expenses across iPhone, iPad and Mac.</p>
+    <input class="field" id="em" type="email" placeholder="Email" autocomplete="email" style="margin-top:14px">
+    <input class="field" id="pw" type="password" placeholder="Password (6+ characters)" autocomplete="current-password" style="margin-top:8px">
+    <div class="err" id="err">${esc(err)}</div>
+    <button class="btn" id="si" style="width:100%">Sign in</button>
+    <button class="btn sec" id="su" style="width:100%;margin-top:8px">Create account (first time)</button>
+    <button id="fp" style="margin-top:14px;color:var(--accent);font-size:14px;width:100%">Forgot password?</button></div>`;
+  const {A,auth}=S.fb, em=$("#em"), pw=$("#pw"), er=$("#err");
+  const msg=e=>({"auth/invalid-credential":"Wrong email or password","auth/email-already-in-use":"Account exists — use Sign in","auth/weak-password":"Password needs 6+ characters","auth/invalid-email":"Check the email address","auth/network-request-failed":"No internet connection","auth/operation-not-allowed":"Turn on Email/Password sign-in in Firebase (see guide)"}[e.code]||e.message);
+  $("#si").onclick=()=>A.signInWithEmailAndPassword(auth,em.value.trim(),pw.value).catch(e=>er.textContent=msg(e));
+  $("#su").onclick=()=>A.createUserWithEmailAndPassword(auth,em.value.trim(),pw.value).catch(e=>er.textContent=msg(e));
+  $("#fp").onclick=()=>{ if(!em.value.trim()) return er.textContent="Type your email first"; A.sendPasswordResetEmail(auth,em.value.trim()).then(()=>er.textContent="Reset link sent to your email").catch(e=>er.textContent=msg(e)); };
+}
+
+async function boot(){
+  if(!FIREBASE_CONFIG){ S.store=new LocalStore(); S.store.start(callbacks); return; }
+  try{
+    const {App,A,F}=await import("./fb.js");
+    const app=App.initializeApp(FIREBASE_CONFIG);
+    const auth=A.initializeAuth(app,{persistence:[A.indexedDBLocalPersistence,A.browserLocalPersistence]});
+    let db; try{ db=F.initializeFirestore(app,{localCache:F.persistentLocalCache({tabManager:F.persistentMultipleTabManager()})}); }catch(e){ db=F.getFirestore(app); }
+    S.fb={App,A,F,app,auth,db};
+    A.onAuthStateChanged(auth,user=>{
+      if(!user){ S.user=null; S.store=null; S.config=null; S.expenses=[]; authScreen(); return; }
+      S.user=user; S.store=new FirebaseStore(S.fb,user); S.store.start(callbacks);
+    });
+  }catch(e){
+    console.error(e);
+    $("#app").innerHTML=`<div class="empty">Couldn't load sync (are you offline on first launch?).<br><br><button class="btn small" onclick="location.reload()">Retry</button></div>`;
+  }
+}
+boot();
+
+if("serviceWorker" in navigator && location.protocol==="https:" && !/claude|claudeusercontent/.test(location.hostname)){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
